@@ -32,8 +32,6 @@ enum keycodes {
   QWERTY = SAFE_RANGE,
   LOWER,
   RAISE,
-  BACKLIT,
-  EXT_PLV,
   PUBG,
   PUBG_LOWER
 };
@@ -173,11 +171,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 };
 
-#ifdef AUDIO_ENABLE
-  float plover_song[][2]     = SONG(PLOVER_SOUND);
-  float plover_gb_song[][2]  = SONG(PLOVER_GOODBYE_SOUND);
-#endif
-
 void update_tri_layer_RGB(uint8_t layer1, uint8_t layer2, uint8_t layer3) {
   if (IS_LAYER_ON(layer1) && IS_LAYER_ON(layer2)) {
     rgblight_setrgb(46, 204, 113);
@@ -186,8 +179,6 @@ void update_tri_layer_RGB(uint8_t layer1, uint8_t layer2, uint8_t layer3) {
     layer_off(layer3);
   }
 }
-
-// Runs constantly in the background, in a loop.
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
