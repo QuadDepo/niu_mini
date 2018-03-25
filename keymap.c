@@ -21,24 +21,43 @@ extern keymap_config_t keymap_config;
 
 enum layers {
   _QWERTY,
-  _COLEMAK,
-  _DVORAK,
   _LOWER,
   _RAISE,
-  _PLOVER,
-  _ADJUST
+  _PUBG,
+  _ADJUST,
+  _PUBG_LOWER
 };
 
 enum keycodes {
   QWERTY = SAFE_RANGE,
-  COLEMAK,
-  DVORAK,
-  PLOVER,
   LOWER,
   RAISE,
   BACKLIT,
-  EXT_PLV
+  EXT_PLV,
+  PUBG,
+  PUBG_LOWER
 };
+
+void matrix_scan_user(void) {
+
+    uint8_t layer = biton32(layer_state);
+
+    switch (layer) {
+        case _QWERTY:
+            rgblight_setrgb(34,80,149);
+            break;
+        case _PUBG:
+            rgblight_setrgb(240, 188, 58);
+            break;
+        case _LOWER:
+            rgblight_setrgb(250,201,1);
+            break;
+        case _RAISE:
+            rgblight_setrgb(221,1,0);
+            break;
+    }
+};
+
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
@@ -111,8 +130,43 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  */
 [_ADJUST] = {
   {_______, RESET,   KC_UP,   _______, _______, _______, _______, TERM_ON, TERM_OFF,_______, _______, KC_DEL },
-  {_______, KC_LEFT, KC_DOWN,  KC_RGHT,   AU_OFF,  AG_NORM, AG_SWAP, QWERTY,  COLEMAK, DVORAK,  PLOVER,  _______},
-  {_______, MUV_DE,  MUV_IN,  MU_ON,   MU_OFF,  MI_ON,   MI_OFF,  _______, _______, _______, _______, _______},
+  {_______, KC_LEFT, KC_DOWN,  KC_RGHT,   AU_OFF,  AG_NORM, AG_SWAP, QWERTY,  _______, _______,   _______,  _______},
+  {_______, MUV_DE,  MUV_IN,  MU_ON,   MU_OFF,  MI_ON,   MI_OFF,  _______, _______, _______, _______, TO(_PUBG)},
+  {_______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______}
+},
+
+/* Adjust (Lower + Raise)
+ * ,-----------------------------------------------------------------------------------.
+ * |  TAB |   Q  |   W  |  E   |   R  |  T   |      |      |      |      |      |  PU  |
+ * |------+------+------+------+------+-------------+------+------+------+------+------|
+ * | SHFT |   A  |   S  |  D   |   F  |      |      |      |      |      |      |  PD  |
+ * |------+------+------+------+------+------|------+------+------+------+------+------|
+ * |  ESC |   Z  |   X  |  C   |  V   |  B   |  N   |  M   |      |      |      |      |
+ * |------+------+------+------+------+------+------+------+------+------+------+------|
+ * |      |  INS | CTRL |  ALT | RAISE|    SPACE    |      |  C1  |  C2  |  C3  | C4   |
+ * `-----------------------------------------------------------------------------------'
+ */
+[_PUBG] = {
+  {KC_TAB, KC_Q,   KC_W,   KC_E, KC_R, KC_T, _______, _______, _______,_______, _______, KC_PGUP },
+  {KC_LSFT, KC_A, KC_S,  KC_D,   KC_F,  _______, _______, _______,  _______, TO(_QWERTY),  _______,  KC_PGDN},
+  {KC_ESC, KC_Z,  KC_X,  KC_C,  KC_V,  KC_B,   KC_N,  KC_M, _______, _______, _______, _______},
+  {_______, KC_INSERT, KC_LGUI, KC_LALT, PUBG_LOWER, KC_SPC, KC_SPC, _______, LCTL(KC_1), LCTL(KC_2), LCTL(KC_3), LCTL(KC_4)}
+},
+/* Adjust (Lower + Raise)
+ * ,-----------------------------------------------------------------------------------.
+ * |      |   1  |   2  |  3   |      |      |      |      |      |      |      |      |
+ * |------+------+------+------+------+-------------+------+------+------+------+------|
+ * |      |   4  |   5  |  6   |      |      |      |      |      |      |      |      |
+ * |------+------+------+------+------+------|------+------+------+------+------+------|
+ * |      |   7  |   8  |   9  |      |      |      |      |      |      |      |      |
+ * |------+------+------+------+------+------+------+------+------+------+------+------|
+ * |      |      |      |      |      |             |      |      |      |      |      |
+ * `-----------------------------------------------------------------------------------'
+ */
+[_PUBG_LOWER] = {
+  {_______, KC_1,   KC_2,   KC_3, _______, _______, _______, _______, _______,_______, _______,  },
+  {_______, KC_4, KC_5,  KC_6,   _______,  _______, _______, _______,  _______, _______,  _______,  _______},
+  {_______, KC_7,  KC_8,  KC_9,  _______,  _______,   _______,  _______, _______, _______, _______, _______},
   {_______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______}
 }
 
@@ -133,76 +187,42 @@ void update_tri_layer_RGB(uint8_t layer1, uint8_t layer2, uint8_t layer3) {
   }
 }
 
+// Runs constantly in the background, in a loop.
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
     case QWERTY:
-      rgblight_setrgb(34,80,149);
       if (record->event.pressed) {
-        print("mode just switched to qwerty and this is a huge string\n");
         set_single_persistent_default_layer(_QWERTY);
+        SEND_STRING("QMK is the best thing ever!"); // this is our macro!
       }
       return false;
       break;
     case LOWER:
       if (record->event.pressed) {
         layer_on(_LOWER);
-        rgblight_setrgb(250,201,1);
         update_tri_layer_RGB(_LOWER, _RAISE, _ADJUST);
       } else {
         layer_off(_LOWER);
         update_tri_layer_RGB(_LOWER, _RAISE, _ADJUST);
-        rgblight_setrgb(34,80,149);
+      }
+      return false;
+      break;
+    case PUBG_LOWER:
+      if (record->event.pressed) {
+        layer_on(_PUBG_LOWER);
+      } else {
+        layer_off(_PUBG_LOWER);
       }
       return false;
       break;
     case RAISE:
       if (record->event.pressed) {
         layer_on(_RAISE);
-        rgblight_setrgb(221,1,0);
         update_tri_layer_RGB(_LOWER, _RAISE, _ADJUST);
       } else {
         layer_off(_RAISE);
         update_tri_layer_RGB(_LOWER, _RAISE, _ADJUST);
-        rgblight_setrgb(34,80,149);
-      }
-      return false;
-      break;
-    case BACKLIT:
-      if (record->event.pressed) {
-        register_code(KC_RSFT);
-        #ifdef BACKLIGHT_ENABLE
-          backlight_step();
-        #endif
-      } else {
-        unregister_code(KC_RSFT);
-      }
-      return false;
-      break;
-    case PLOVER:
-      if (record->event.pressed) {
-        #ifdef AUDIO_ENABLE
-          stop_all_notes();
-          PLAY_SONG(plover_song);
-        #endif
-        layer_off(_RAISE);
-        layer_off(_LOWER);
-        layer_off(_ADJUST);
-        layer_on(_PLOVER);
-        if (!eeconfig_is_enabled()) {
-            eeconfig_init();
-        }
-        keymap_config.raw = eeconfig_read_keymap();
-        keymap_config.nkro = 1;
-        eeconfig_update_keymap(keymap_config.raw);
-      }
-      return false;
-      break;
-    case EXT_PLV:
-      if (record->event.pressed) {
-        #ifdef AUDIO_ENABLE
-          PLAY_SONG(plover_gb_song);
-        #endif
-        layer_off(_PLOVER);
       }
       return false;
       break;
